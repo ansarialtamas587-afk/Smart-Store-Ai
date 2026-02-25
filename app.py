@@ -104,7 +104,6 @@ def run_horizon_prediction(data, h_days=6):
     return df_feat, future_df, "Success"
 
 df_historical, df_future, status = run_horizon_prediction(df)
-
 # --- 5. DASHBOARD & METRICS ---
 if status == "Success":
     st.markdown("### 6-Day Horizon Optimization")
@@ -113,10 +112,26 @@ if status == "Success":
     total_suggested_order = int(df_future['Upstock_Target'].sum())
     capital_req = total_suggested_order * item_price
 
+    # --- THE "SHOPKEEPER PSYCHOLOGY" MATH ---
+    # A normal shopkeeper orders based on their recent "best" day to be safe.
+    naive_daily_guess = df_historical['Sales'].tail(7).max() 
+    naive_6_day_order = int(naive_daily_guess * 6)
+    
+    # Calculate how many dead-stock units the AI just saved them from buying
+    units_saved = max(0, naive_6_day_order - total_suggested_order)
+    cash_saved = int(units_saved * item_price)
+
+    # --- THE DISPLAY ---
     col1, col2, col3 = st.columns(3)
     col1.metric("Predicted 6-Day Demand", f"{total_6_day_demand} units")
-    col2.metric("Total Order Recommended", f"{total_suggested_order} units", delta=f"+{total_suggested_order - total_6_day_demand} Math Buffer")
-    col3.metric("Required 6-Day Capital", f"₹ {capital_req:,}")
+    col2.metric("AI Recommended Order", f"{total_suggested_order} units", delta=f"+{total_suggested_order - total_6_day_demand} Math Buffer")
+    col3.metric("Required Capital", f"₹ {capital_req:,}")
+
+    # THE BIG REVEAL FOR THE OWNER
+    if cash_saved > 0:
+        st.success(f"🛡️ **Cash Protected:** By following the AI instead of your gut feeling, you avoided buying {units_saved} excess units. You just kept **₹ {cash_saved:,}** safely in your bank account instead of locked in dead stock.")
+    else:
+        st.info("📈 **Growth Mode:** Demand is spiking! Your capital is being perfectly allocated to prevent empty shelves and lost customers.")
 
     # --- 6. ADVANCED GRAPHICAL PLOT ---
     st.markdown("---")

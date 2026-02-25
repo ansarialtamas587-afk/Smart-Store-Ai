@@ -33,7 +33,7 @@ with st.sidebar:
     item_name = st.text_input("Target Item", "Smartphones")
     item_price = st.number_input("Avg Price (₹)", value=15000, step=500)
     risk_tolerance =   st.slider("Select Risk Tolerance", min_value=1, max_value=10)
-  st.markdown("---")
+    st.markdown("---")
     st.header("📂 Train on Real Data")
     st.caption("Upload historical sales (CSV) to retrain the AI instantly.")
     uploaded_file = st.file_uploader("Upload Shop's CSV", type=['csv'])

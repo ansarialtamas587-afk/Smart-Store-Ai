@@ -32,20 +32,26 @@ with st.sidebar:
     st.header("🏪 Store Settings")
     item_name = st.text_input("Target Item", "Smartphones")
     item_price = st.number_input("Avg Price (₹)", value=15000, step=500)
-    risk_tolerance = st.slider("Stock-out Risk Tolerance", 1, 10, 4, help="Lower = Higher Safety Buffer")
+    risk_tolerance = st.slider    st.markdown("---")
+    st.header("📂 Train on Real Data")
+    st.caption("Upload historical sales (CSV) to retrain the AI instantly.")
+    uploaded_file = st.file_uploader("Upload Shop's CSV", type=['csv'])
     
-    st.markdown("---")
-    st.header("📝 Record Daily Sales")
-    with st.form("sales_entry"):
-        new_date = st.date_input("Date", datetime.now().date())
-        new_sales = st.number_input("Units Sold Today", min_value=0, step=1)
-        if st.form_submit_button("Save Record"):
-            new_row = pd.DataFrame({'Date': [pd.to_datetime(new_date)], 'Sales': [new_sales]})
-            df = pd.concat([df, new_row], ignore_index=True)
-            df = df.drop_duplicates(subset=['Date'], keep='last').sort_values('Date')
-            df.to_csv(DATA_FILE, index=False)
-            st.success("✅ Saved! Recalculating 6-Day Forecast...")
-            st.rerun()
+    if uploaded_file is not None:
+        try:
+            real_df = pd.read_csv(uploaded_file)
+            # Ensure the CSV has 'Date' and 'Sales' columns
+            if 'Date' in real_df.columns and 'Sales' in real_df.columns:
+                real_df['Date'] = pd.to_datetime(real_df['Date'])
+                # Overwrite the dummy database with real data
+                real_df.to_csv(DATA_FILE, index=False)
+                st.success("✅ Real data loaded! AI retraining...")
+                st.rerun()
+            else:
+                st.error("CSV must have 'Date' and 'Sales' columns.")
+        except Exception as e:
+            st.error("Error reading file.")
+            
 
 # --- 4. ADVANCED AI CORE (Gradient Boosting + Lags) ---
 def engineer_features(data):
@@ -157,4 +163,5 @@ if status == "Success":
     st.plotly_chart(fig, use_container_width=True)
 else:
     st.warning("Please record at least 10 days of data to activate the Advanced Horizon Engine.")
+
     

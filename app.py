@@ -36,7 +36,7 @@ with st.sidebar:
     st.markdown("---")
     st.header("📂 Train on Real Data")
     st.caption("Upload historical sales (CSV) to retrain the AI instantly.")
-    uploaded_file = st.file_uploader("Upload Shop's CSV", type=['csv'])
+    uploaded_file = st.file_uploader("Upload Shop's CSV", type=['csv','txt'])
     
     if uploaded_file is not None:
         try:
